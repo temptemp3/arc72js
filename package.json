@@ -1,7 +1,7 @@
 {
-  "name": "arc200js",
+  "name": "arc72js",
   "version": "1.2.19",
-  "description": "arc200 js library",
+  "description": "arc72 js library",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\""
@@ -15,12 +15,12 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/temptemp3/arc200js.git"
+    "url": "git+ssh://git@github.com/temptemp3/arc72js.git"
   },
   "bugs": {
-    "url": "https://github.com/temptemp3/arc200js/issues"
+    "url": "https://github.com/temptemp3/arc82js/issues"
   },
-  "homepage": "https://github.com/temptemp3/arc200js#readme",
+  "homepage": "https://github.com/temptemp3/arc72js#readme",
   "engines": {
     "npm": ">=10.2.0",
     "node": ">=21.1.0"
