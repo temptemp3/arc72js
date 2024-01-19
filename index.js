@@ -1,20 +1,9 @@
 import CONTRACT from "arccjs";
 //import dotenv from "dotenv";
 
-import ARC200Spec from "./abi/arc/200/contract.json" assert { type: "json" }; // spec
-import ARC200Extension from "./abi/arc/200/extension.json" assert { type: "json" }; // extension (non-standard methods)
+import ARC72Spec from "./abi/arc/72/arc72.json" assert { type: "json" }; // spec
 
 //dotenv.config();
-
-const BalanceBoxCost = 28500;
-const AllowanceBoxCost = 28100;
-
-/*
- * oneAddress is the address of the account that holds more
- * more than 0 ALGOs. This account is used to allow for simulation.
- */
-export const oneAddress =
-  "G3MSA75OZEJTCCENOJDLDJK7UD7E2K5DNC7FVHCNOV7E3I4DTXTOWDUIFQ";
 
 /*
  * prepareString
@@ -47,218 +36,56 @@ const handleResponse = (name, res) => {
   return res;
 };
 
-/*
- * arc200_name
- * - get name
- * @param contractInstance: contract instance
- * @returns: name (String)
- */
-export const arc200_name = async (contractInstance) =>
-  handleResponse("Name", await contractInstance.arc200_name());
+export const arc72_approve = async (contractInstance, addr, amt) =>
+  handleResponse("Approve", await contractInstance.arc72_approve(addr, amt));
 
-/*
- * arc200_symbol
- * - get symbol
- * @param contractInstance: contract instance
- * @returns: symbol (String)
- */
-export const arc200_symbol = async (contractInstance) =>
-  handleResponse("Symbol", await contractInstance.arc200_symbol());
+export const arc72_balanceOf = async (contractInstance, addr) =>
+  handleResponse(`BalanceOf ${addr}`, await contractInstance.arc72_balanceOf(addr));
 
-/*
- * arc200_totalSupply
- * - get total supply
- * @param contractInstance: contract instance
- * @returns: total supply (Int)
- */
-export const arc200_totalSupply = async (contractInstance) =>
-  handleResponse("Total Supply", await contractInstance.arc200_totalSupply());
+export const arc72_getApproved = async (contractInstance, amt) =>
+  handleResponse("Get Approvedy", await contractInstance.arc72_getApproved(amt));
 
-/*
- * arc200_decimals
- * - get number of decimals
- * @param contractInstance: contract instance
- * @returns: number of decimals (Int)
- */
-export const arc200_decimals = async (contractInstance) =>
-  handleResponse(
-    "Number of Decimals",
-    await contractInstance.arc200_decimals()
-  );
+export const arc72_isApprovedForAll = async (contractInstance, addrFrom, addrSpender) =>
+  handleResponse("Is Approved for All", await contractInstance.arc72_isApprovedForAll(addrFrom, addrSpender));
 
-/*
- * arc200_balanceOf
- * - get balance of addr
- * @param contractInstance: contract instance
- * @param addr: address to check
- * @returns: balance (Int)
- */
-export const arc200_balanceOf = async (contractInstance, addr) =>
-  handleResponse(
-    `BalanceOf ${addr}`,
-    await contractInstance.arc200_balanceOf(addr)
-  );
+export const arc72_ownerOf = async (contractInstance, id) =>
+  handleResponse(`Owner of ${id}`, await contractInstance.arc72_ownerOf(id));
 
-/*
- * arc200_allowance
- * - check if spender is allowed to spend from addrFrom
- * @param contractInstance: contract instance
- * @param addrFrom: from address
- * @param addrSpender: spender address
- * @returns: allowance (Int)
- */
-export const arc200_allowance = async (
-  contractInstance,
-  addrFrom,
-  addrSpender
-) =>
-  handleResponse(
-    `Allowance from: ${addrFrom} spender: ${addrSpender}`,
-    await contractInstance.arc200_allowance(addrFrom, addrSpender)
-  );
+export const arc72_setApprovalForAll = async (contractInstance, addr, approved) =>
+  handleResponse("Set Approval for All", await contractInstance.arc72_setApprovalForAll(addr, approved));
 
-/*
- * hasBalance
- * - check if addr has balance
- * @param contractInstance: contract instance
- * @param addr: address to check
- * @returns: bool
- */
-export const hasBalance = async (contractInstance, addr) =>
-  handleResponse(`HasBalance ${addr}`, await contractInstance.hasBalance(addr));
+export const arc72_tokenByIndex = async (contractInstance, id) =>
+  handleResponse(`Token by index ${addr}`, await contractInstance.arc72_tokenByIndex(id));
 
-/*
- * hasAllowance
- * - check if spender is allowed to spend from addrFrom
- * @param contractInstance: contract instance
- * @param addrFrom: from address
- * @param addrSpender: spender address
- * @returns: bool
- */
-export const hasAllowance = async (contractInstance, addrFrom, addrSpender) =>
-  handleResponse(
-    `HasAllowance from: ${addrFrom} spender: ${addrSpender}`,
-    await contractInstance.hasAllowance(addrFrom, addrSpender)
-  );
+export const arc72_tokenURI = async (contractInstance, id) =>
+  handleResponse("Token URI", await contractInstance.arc72_tokenURI(id));
 
-/*
- * safe_arc200_transfer
- * - send
- * @param ci: contract instance
- * @param addrTo: to address
- * @param amt: amount to send
- * @returns: undefined
- */
-export const safe_arc200_transfer = async (
-  ci,
-  addrTo,
-  amt,
-  simulate,
-  waitForConfirmation
-) => {
-  try {
-    const opts = {
-      acc: { addr: ci.getSender(), sk: ci.getSk() },
-      simulate,
-      formatBytes: true,
-      waitForConfirmation,
-    };
-    const ARC200 = new Contract(ci.getContractId(), ci.algodClient, opts);
-    const bal = await ci.arc200_balanceOf(addrTo);
-    const addPayment = !bal.success || (bal.success && bal.returnValue === 0n);
-    if (addPayment) {
-      ARC200.contractInstance.setPaymentAmount(BalanceBoxCost);
-    }
-    const addrFrom = ARC200.contractInstance.getSender();
-    console.log(`Transfer from: ${addrFrom} to: ${addrTo} amount: ${amt}`);
-    return await ARC200.contractInstance.arc200_transfer(addrTo, amt);
-  } catch (e) {
-    console.log(e);
-  }
-};
+export const arc72_totalSupply = async (contractInstance) =>
+  handleResponse("Total Supply", await contractInstance.arc72_totalSupply());
 
-/*
- * safe_arc200_transferFrom
- * - spend
- * @param ci: contract instance
- * @param addrFrom: from address
- * @param addrTo: to address
- * @param amt: amount to spend
- * @returns: undefined
- */
-export const safe_arc200_transferFrom = async (
-  ci,
-  addrFrom,
-  addrTo,
-  amt,
-  simulate,
-  waitForConfirmation
-) => {
-  try {
-    const opts = {
-      acc: { addr: ci.getSender(), sk: ci.getSk() },
-      simulate,
-      formatBytes: true,
-      waitForConfirmation,
-    };
-    const ARC200 = new Contract(ci.getContractId(), ci.algodClient, opts);
-    const bal = await ci.arc200_balanceOf(addrTo);
-    const addPayment = !bal.success || (bal.success && bal.returnValue === 0n);
-    if (addPayment) {
-      ARC200.contractInstance.setPaymentAmount(BalanceBoxCost);
-    }
-    const addrSpender = ARC200.contractInstance.getSender();
-    console.log(
-      `TransferFrom spender: ${addrSpender} from: ${addrFrom} to: ${addrTo} amount: ${amt}`
-    );
-    return await ARC200.contractInstance.arc200_transferFrom(
-      addrFrom,
-      addrTo,
-      amt
-    );
-  } catch (e) {
-    console.log(e);
-  }
-};
+export const arc72_transferFrom = async (contractInstance, addrFrom, addrSpender, amt) =>
+  handleResponse(`Transfer`, await contractInstance.arc72_transferFrom(addrFrom, addrSpender, amt));
 
-/*
- * safe_arc200_approve
- * - approve spending
- * @param ci: contract instance
- * @param addrSpender: spender address
- * @param amt: amount to approve
- * @returns: undefined
- */
+export const burn = async (contractInstance, id) =>
+  handleResponse("Burn", await contractInstance.burn(id));
 
-export const safe_arc200_approve = async (
-  ci,
-  addrSpender,
-  amt,
-  simulate,
-  waitForConfirmation
-) => {
-  try {
-    const opts = {
-      acc: { addr: ci.getSender(), sk: ci.getSk() },
-      simulate,
-      formatBytes: true,
-      waitForConfirmation,
-    };
-    const ARC200 = new Contract(ci.getContractId(), ci.algodClient, opts);
-    const addrFrom = ARC200.contractInstance.getSender();
-    const all = await ci.arc200_allowance(addrFrom, addrSpender);
-    const addPayment = !all.success || (all.success && all.returnValue === 0n);
-    if (addPayment) {
-      ARC200.contractInstance.setPaymentAmount(AllowanceBoxCost);
-    }
-    console.log(
-      `Approval from: ${addrFrom} spender: ${addrSpender} amount: ${amt}`
-    );
-    return await ARC200.contractInstance.arc200_approve(addrSpender, amt);
-  } catch (e) {
-    console.log(e);
-  }
-};
+export const close = async (contractInstance) =>
+  handleResponse("Close", await contractInstance.close());
+
+export const deleteNftDataBox = async (contractInstance, num) =>
+  handleResponse("Delete NFT Data Box", await contractInstance.deleteNftDataBox(num));
+
+export const deleteOperatorDataBox = async (contractInstance, addrFrom,addrSpender) =>
+  handleResponse("Delete Operator Data Box", await contractInstance.deleteOperatorDataBox(addrFrom,addrSpender));
+
+export const grant = async (contractInstance, addr) =>
+  handleResponse("Grant", await contractInstance.grant(addr));
+
+export const manager = async (contractInstance) =>
+  handleResponse("Manager", await contractInstance.manager());
+
+export const mintTo = async (contractInstance, addr, num1, num2, num3, num4) =>
+  handleResponse("Mint To", await contractInstance.mintTo(addr, num1, num2, num3, num4));
 
 /*
  * Contract class
@@ -268,6 +95,7 @@ class Contract {
   constructor(
     contractId,
     algodClient,
+    indexerClient,
     opts = {
       acc: { addr: oneAddress },
       simulate: true,
@@ -278,9 +106,11 @@ class Contract {
     this.contractInstance = new CONTRACT(
       contractId,
       algodClient,
+      indexerClient,
       {
-        ...ARC200Spec,
-        methods: [...ARC200Spec.methods, ...ARC200Extension.methods], // mixin non-standard methods
+        ...ARC72Spec,
+        methods: [...ARC72Spec.methods],
+        events: [...ARC72Spec.events],
       },
       opts.acc,
       opts.simulate,
@@ -288,98 +118,69 @@ class Contract {
     );
     this.opts = opts;
   }
-  // standard methods
-  arc200_name = async () => {
-    const res = await arc200_name(this.contractInstance);
-    if (!res.success) return res;
-    if (this.opts?.formatBytes)
-      return {
-        ...res,
-        returnValue: prepareString(res.returnValue),
-      };
-    return res;
-  };
-  arc200_symbol = async () => {
-    const res = await arc200_symbol(this.contractInstance);
-    if (!res.success) return res;
-    if (this.opts?.formatBytes)
-      return {
-        ...res,
-        returnValue: prepareString(res.returnValue),
-      };
-    return res;
-  };
-  arc200_totalSupply = async () =>
-    await arc200_totalSupply(this.contractInstance);
-  arc200_decimals = async () => await arc200_decimals(this.contractInstance);
-  arc200_balanceOf = async (addr) =>
-    await arc200_balanceOf(this.contractInstance, addr);
-  arc200_allowance = async (addrFrom, addrSpender) =>
-    await arc200_allowance(this.contractInstance, addrFrom, addrSpender);
-  arc200_transfer = async (addrTo, amt, simulate, waitForConfirmation) =>
-    await safe_arc200_transfer(
-      this.contractInstance,
-      addrTo,
-      amt,
-      simulate,
-      waitForConfirmation
-    );
-  arc200_transferFrom = async (
-    addrFrom,
-    addrTo,
-    amt,
-    simulate,
-    waitForConfirmation
-  ) =>
-    await safe_arc200_transferFrom(
-      this.contractInstance,
-      addrFrom,
-      addrTo,
-      amt,
-      simulate,
-      waitForConfirmation
-    );
-  arc200_approve = async (addrSpender, amt, simulate, waitForConfirmation) =>
-    await safe_arc200_approve(
-      this.contractInstance,
-      addrSpender,
-      amt,
-      simulate,
-      waitForConfirmation
-    );
-  // non-standard methods
-  hasBalance = async (addr) => await hasBalance(this.contractInstance, addr);
-  hasAllowance = async (addrFrom, addrSpender) =>
-    await hasAllowance(this.contractInstance, addrFrom, addrSpender);
-  // helper methods
-  getMetadata = async () => {
-    const [name, symbol, totalSupply, decimals] = await Promise.all([
-      this.arc200_name(),
-      this.arc200_symbol(),
-      this.arc200_totalSupply(),
-      this.arc200_decimals(),
-    ]);
-    if (
-      !name.success ||
-      !symbol.success ||
-      !totalSupply.success ||
-      !decimals.success
-    ) {
+
+  arc72_approve = async (addr, amt) => 
+    await arc72_approve(this.contractInstance, addr, amt);
+  arc72_balanceOf = async (addr) => 
+    await arc72_balanceOf(this.contractInstance, addr);
+  arc72_getApproved = async (amt) =>
+    await arc72_getApproved(this.contractInstance, amt);
+  arc72_isApprovedForAll = async (addrFrom, addrSpender) =>
+    await arc72_isApprovedForAll(this.contractInstance, addrFrom, addrSpender);
+  arc72_ownerOf = async (id) =>
+    await arc72_ownerOf(this.contractInstance, id);
+  arc72_tokenByIndex = async (id) => 
+    await arc72_tokenByIndex(this.contractInstance, id);
+  arc72_tokenURI = async (id) => 
+    await arc72_tokenURI(this.contractInstance, id);
+  arc72_totalSupply = async () =>
+    await arc72_totalSupply(this.contractInstance);
+  arc72_transferFrom = async (addrFrom, addrSpender, amt) =>
+    await arc72_transferFrom(this.contractInstance, addrFrom, addrSpender, amt);
+  burn = async (id) =>
+    await burn(this.contractInstance, id);
+  close = async () =>
+    await close(this.contractInstance);
+  deleteNftDataBox = async (id) =>
+    await deleteNftDataBox(this.contractInstance, id);
+  deleteOperatorDataBox = async (addrFrom, addrSpender) =>
+    await deleteOperatorDataBox(this.contractInstance, addrFrom, addrSpender);
+  grant = async (addr) =>
+    await grant(this.contractInstance, addr);
+  manager = async () =>
+    await manager(this.contractInstance);
+  mintTo = async (addr, num1, num2, num3, num4) =>
+    await mintTo(this.contractInstance, addr, num1, num2, num3, num4);
+
+  state = async () => {
+    const stateR = await this.contractInstance.state();
+    if (!stateR.success) {
       return {
         success: false,
-        error: "Failed to get metadata",
+        error: "Failed to get state",
       };
     }
+    const [
+      addr,
+      num1,
+      num2
+    ] = stateR.returnValue;
     return {
       success: true,
       returnValue: {
-        name: name.returnValue,
-        symbol: symbol.returnValue,
-        totalSupply: totalSupply.returnValue,
-        decimals: decimals.returnValue,
+        addr: addr,
+        num1: num1,
+        num2:num2,
       },
     };
   };
+
+  arc72_Approval = async (query) =>
+    await this.contractInstance.arc72_Approval(query);
+  arc72_ApprovalForAll = async (query) =>
+    await this.contractInstance.arc72_ApprovalForAll(query);
+  arc72_Transfer = async (query) =>
+    await this.contractInstance.arc72_Transfer(query);
 }
 
 export default Contract;
