@@ -1,6 +1,6 @@
 import CONTRACT, { oneAddress } from "arccjs";
 
-import { arc72Schema } from "./abi/arc/72";
+import { arc72Schema } from "./abi/arc/72/index.js";
 
 // const BalanceBoxCost = 28500;
 // const AllowanceBoxCost = 28100;
