@@ -2,8 +2,8 @@ import CONTRACT, { oneAddress } from "arccjs";
 
 import { arc72Schema } from "./abi/arc/72/index.js";
 
-// const BalanceBoxCost = 28500;
-// const AllowanceBoxCost = 28100;
+const BalanceBoxCost = 28500; 
+const AllowanceBoxCost = 28500; 
 
 /*
  * prepareString
@@ -127,146 +127,154 @@ const supportsInterface = async (contractInstance, sel) =>
   );
 
 /*
- * safe_arc200_transfer
+ * safe_arc72_transferFrom
  * - send
- * @param ci: contract instance
- * @param addrTo: to address
- * @param amt: amount to send
- * @param simulate: boolean
- * @param waitForConfirmation: boolean
- * @returns: if simulate: true  { success: bool, txns: string[] }
- *           if simulate: false { success: bool, txId: string }
- */
-// export const safe_arc200_transfer = async (
-//   ci,
-//   addrTo,
-//   amt,
-//   simulate,
-//   waitForConfirmation
-// ) => {
-//   try {
-//     const opts = {
-//       acc: { addr: ci.getSender(), sk: ci.getSk() },
-//       simulate,
-//       formatBytes: true,
-//       waitForConfirmation,
-//     };
-//     const ARC200 = new Contract(
-//       ci.getContractId(),
-//       ci.algodClient,
-//       ci.indexerClient,
-//       opts
-//     );
-//     const bal = await ci.arc200_balanceOf(addrTo);
-//     const addPayment = !bal.success || (bal.success && bal.returnValue === 0n);
-//     if (addPayment) {
-//       ARC200.contractInstance.setPaymentAmount(BalanceBoxCost);
-//     }
-//     const addrFrom = ARC200.contractInstance.getSender();
-//     console.log(`Transfer from: ${addrFrom} to: ${addrTo} amount: ${amt}`);
-//     return await ARC200.contractInstance.arc200_transfer(addrTo, amt);
-//   } catch (e) {
-//     console.log(e);
-//   }
-// };
-
-/*
- * safe_arc200_transferFrom
- * - spend
  * @param ci: contract instance
  * @param addrFrom: from address
  * @param addrTo: to address
- * @param amt: amount to spend
+ * @param tid: token id
  * @param simulate: boolean
  * @param waitForConfirmation: boolean
  * @returns: if simulate: true  { success: bool, txns: string[] }
- *           if simulate: false { success: bool, txId: string }
+ *          if simulate: false { success: bool, txId: string }
  */
-// export const safe_arc200_transferFrom = async (
-//   ci,
-//   addrFrom,
-//   addrTo,
-//   amt,
-//   simulate,
-//   waitForConfirmation
-// ) => {
-//   try {
-//     const opts = {
-//       acc: { addr: ci.getSender(), sk: ci.getSk() },
-//       simulate,
-//       formatBytes: true,
-//       waitForConfirmation,
-//     };
-//     const ARC200 = new Contract(
-//       ci.getContractId(),
-//       ci.algodClient,
-//       ci.indexerClient,
-//       opts
-//     );
-//     const bal = await ci.arc200_balanceOf(addrTo);
-//     const addPayment = !bal.success || (bal.success && bal.returnValue === 0n);
-//     if (addPayment) {
-//       ARC200.contractInstance.setPaymentAmount(BalanceBoxCost);
-//     }
-//     const addrSpender = ARC200.contractInstance.getSender();
-//     console.log(
-//       `TransferFrom spender: ${addrSpender} from: ${addrFrom} to: ${addrTo} amount: ${amt}`
-//     );
-//     return await ARC200.contractInstance.arc200_transferFrom(
-//       addrFrom,
-//       addrTo,
-//       amt
-//     );
-//   } catch (e) {
-//     console.log(e);
-//   }
-// };
+// TODO - add conditional payment of box cost if ctcAddr balance - minBalance < box cost, 
+//        where box cost is 28500
+const safe_arc72_transferFrom = async (
+  ci,
+  addrFrom,
+  addrTo,
+  tid,
+  simulate,
+  waitForConfirmation
+) => {
+  try {
+    const opts = {
+      acc: { addr: ci.getSender(), sk: ci.getSk() },
+      simulate,
+      formatBytes: true,
+      waitForConfirmation,
+    };
+    const ARC72 = new Contract(
+      ci.getContractId(),
+      ci.algodClient,
+      ci.indexerClient,
+      opts
+    );
+    const bal = await ci.arc72_balanceOf(addrTo);
+    const addPayment = !bal.success || (bal.success && bal.returnValue === 0n);
+    if (addPayment) {
+      ARC72.contractInstance.setPaymentAmount(BalanceBoxCost);
+    }
+    const addrSpender = ARC72.contractInstance.getSender();
+    console.log(
+      `TransferFrom spender: ${addrSpender} from: ${addrFrom} to: ${addrTo} token: ${tid}`
+    );
+    return await ARC72.contractInstance.arc72_transferFrom(
+      addrFrom,
+      addrTo,
+      tid
+    );
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 /*
- * safe_arc200_approve
+ * safe_arc72_approve
  * - approve spending
  * @param ci: contract instance
  * @param addrSpender: spender address
- * @param amt: amount to approve
+ * @param tid: token id
  * @param simulate: boolean
  * @param waitForConfirmation: boolean
  * @returns: if simulate: true  { success: bool, txns: string[] }
- *           if simulate: false { success: bool, txId: string }
+ *          if simulate: false { success: bool, txId: string }
  */
-// export const safe_arc200_approve = async (
-//   ci,
-//   addrSpender,
-//   amt,
-//   simulate,
-//   waitForConfirmation
-// ) => {
-//   try {
-//     const opts = {
-//       acc: { addr: ci.getSender(), sk: ci.getSk() },
-//       simulate,
-//       formatBytes: true,
-//       waitForConfirmation,
-//     };
-//     const ARC200 = new Contract(
-//       ci.getContractId(),
-//       ci.algodClient,
-//       ci.indexerClient,
-//       opts
-//     );
-//     const addrFrom = ARC200.contractInstance.getSender();
-//     const all = await ci.arc200_allowance(addrFrom, addrSpender);
-//     const addPayment = !all.success || (all.success && all.returnValue === 0n);
-//     if (addPayment) {
-//       ARC200.contractInstance.setPaymentAmount(AllowanceBoxCost);
-//     }
-//     console.log(
-//       `Approval from: ${addrFrom} spender: ${addrSpender} amount: ${amt}`
-//     );
-//     return await ARC200.contractInstance.arc200_approve(addrSpender, amt);
-//   } catch (e) {
-//     console.log(e);
-//   }
-// };
+// TODO - check if nft exits before attempting to improve
+const safe_arc72_approve = async (
+  ci,
+  addrSpender,
+  tid,
+  simulate,
+  waitForConfirmation
+) => {
+  try {
+    const opts = {
+      acc: { addr: ci.getSender(), sk: ci.getSk() },
+      simulate,
+      formatBytes: true,
+      waitForConfirmation,
+    };
+    const ARC72 = new Contract(
+      ci.getContractId(),
+      ci.algodClient,
+      ci.indexerClient,
+      opts
+    );
+    const addrFrom = ARC72.contractInstance.getSender();
+    const all = await ci.arc72_getApproved(tid);
+    const addPayment = !all.success || (all.success && all.returnValue === 0n);
+    if (addPayment) {
+      ARC72.contractInstance.setPaymentAmount(AllowanceBoxCost);
+    }
+    console.log(
+      `Approval from: ${addrFrom} spender: ${addrSpender} token: ${tid}`
+    );
+    return await ARC72.contractInstance.arc72_approve(addrSpender, tid);
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+/*
+ * safe_arc72_setApprovalForAll
+ * - approve spending
+ * @param ci: contract instance
+ * @param addrSpender: spender address
+ * @param approve: boolean
+ * @param simulate: boolean
+ * @param waitForConfirmation: boolean
+ * @returns: if simulate: true  { success: bool, txns: string[] }
+ *         if simulate: false { success: bool, txId: string }
+ */
+const safe_arc72_setApprovalForAll = async (
+  ci,
+  addrSpender,
+  approve,
+  simulate,
+  waitForConfirmation
+) => {
+  try {
+    const opts = {
+      acc: { addr: ci.getSender(), sk: ci.getSk() },
+      simulate,
+      formatBytes: true,
+      waitForConfirmation,
+    };
+    const ARC72 = new Contract(
+      ci.getContractId(),
+      ci.algodClient,
+      ci.indexerClient,
+      opts
+    );
+    const addrFrom = ARC72.contractInstance.getSender();
+    const all = await ci.arc72_isApprovedForAll(addrFrom, addrSpender);
+    const addPayment = !all.success || (all.success && all.returnValue === 0n);
+    if (addPayment) {
+      ARC72.contractInstance.setPaymentAmount(AllowanceBoxCost);
+    }
+    console.log(
+      `Approval from: ${addrFrom} spender: ${addrSpender} approve: ${approve}`
+    );
+    return await ARC72.contractInstance.arc72_setApprovalForAll(
+      addrSpender,
+      approve
+    );
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 /*
  * Contract class
@@ -330,7 +338,15 @@ class Contract {
     amt,
     simulate,
     waitForConfirmation
-  ) => {};
+  ) =>
+    await safe_arc72_transferFrom(
+      this,
+      addrFrom,
+      addrTo,
+      amt,
+      simulate,
+      waitForConfirmation
+    );
   arc72_approve = async (addrSpender, amt, simulate, waitForConfirmation) => {};
   arc72_setApprovalForAll = async (
     addrSpender,
